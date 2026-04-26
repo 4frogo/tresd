@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finalizar Compra - TresD</title>
+    <meta name="theme-color" content="#6366f1">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .checkout-page { min-height: 100vh; padding: 80px 0 40px; background: var(--dark); }
+        .checkout-header { background: var(--dark-2); padding: 16px 0; margin-bottom: 32px; }
+        .checkout-header .container { display: flex; align-items: center; justify-content: space-between; }
+        .back-link { display: flex; align-items: center; gap: 8px; color: var(--text-light); font-size: 14px; font-weight: 500; }
+        .back-link:hover { color: var(--white); }
+        .steps { display: flex; gap: 8px; }
+        .step { display: flex; align-items: center; gap: 8px; padding: 8px 14px; background: var(--dark); border-radius: 50px; font-size: 13px; color: var(--text-light); }
+        .step.active { background: var(--primary); color: var(--white); }
+        .step.completed { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+        .checkout-grid { display: grid; grid-template-columns: 1fr 380px; gap: 32px; align-items: start; }
+        .checkout-main { display: flex; flex-direction: column; gap: 20px; }
+        .checkout-section { background: var(--dark-2); border: 1px solid var(--dark-3); border-radius: var(--radius-lg); padding: 24px; }
+        .section-title { display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 600; margin-bottom: 20px; }
+        .section-title i { color: var(--primary); }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .form-group { margin-bottom: 14px; }
+        .form-group.full { grid-column: 1 / -1; }
+        .form-group label { display: block; font-size: 13px; font-weight: 500; color: var(--text-light); margin-bottom: 6px; }
+        .form-group input, .form-group select { width: 100%; padding: 12px 14px; background: var(--dark); border: 1px solid var(--dark-3); border-radius: var(--radius); color: var(--white); font-size: 14px; }
+        .form-group input:focus { border-color: var(--primary); }
+        .form-group input::placeholder { color: var(--text-light); }
+        .payment-options { display: flex; flex-direction: column; gap: 10px; }
+        .payment-option { display: flex; align-items: center; gap: 14px; padding: 14px 16px; background: var(--dark); border: 2px solid var(--dark-3); border-radius: var(--radius); cursor: pointer; transition: all 0.2s; }
+        .payment-option:hover { border-color: var(--primary-light); }
+        .payment-option.selected { border-color: var(--primary); background: rgba(99, 102, 241, 0.1); }
+        .payment-radio { width: 18px; height: 18px; border: 2px solid var(--dark-3); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        .payment-option.selected .payment-radio { border-color: var(--primary); }
+        .payment-option.selected .payment-radio::after { content: ''; width: 10px; height: 10px; background: var(--primary); border-radius: 50%; }
+        .payment-icon { width: 36px; height: 36px; background: var(--dark-2); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        .payment-info h4 { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+        .payment-info p { font-size: 12px; color: var(--text-light); }
+        .order-summary { background: var(--dark-2); border: 1px solid var(--dark-3); border-radius: var(--radius-lg); padding: 20px; position: sticky; top: 90px; }
+        .summary-title { font-size: 17px; font-weight: 600; margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid var(--dark-3); }
+        .summary-items { margin-bottom: 16px; max-height: 250px; overflow-y: auto; }
+        .summary-item { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--dark-3); }
+        .summary-item:last-child { border-bottom: none; }
+        .summary-item img { width: 54px; height: 54px; object-fit: cover; border-radius: 8px; }
+        .item-details { flex: 1; }
+        .item-details h4 { font-size: 13px; margin-bottom: 2px; }
+        .item-details p { font-size: 12px; color: var(--text-light); }
+        .item-price { font-size: 14px; font-weight: 600; color: var(--primary-light); }
+        .summary-totals { padding-top: 14px; border-top: 1px solid var(--dark-3); }
+        .total-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; }
+        .total-row span:last-child { color: var(--text-light); }
+        .total-row.final { font-size: 18px; font-weight: 700; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--dark-3); }
+        .total-row.final span:last-child { color: var(--primary-light); }
+        .finish-btn { width: 100%; margin-top: 16px; font-size: 15px; padding: 14px; }
+        .empty-state { text-align: center; padding: 40px; color: var(--text-light); }
+        .success-modal { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.95); display: flex; align-items: center; justify-content: center; z-index: 2000; opacity: 0; visibility: hidden; transition: all 0.3s; }
+        .success-modal.active { opacity: 1; visibility: visible; }
+        .success-content { background: var(--dark-2); border: 1px solid var(--dark-3); border-radius: var(--radius-lg); padding: 40px; text-align: center; max-width: 420px; }
+        .success-icon { width: 80px; height: 80px; background: rgba(16, 185, 129, 0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 40px; color: var(--success); margin: 0 auto 20px; }
+        .success-content h2 { font-size: 24px; margin-bottom: 10px; }
+        .success-content p { color: var(--text-light); margin-bottom: 20px; }
+        .order-id { background: var(--dark); padding: 14px; border-radius: var(--radius); margin-bottom: 20px; }
+        .order-id span { font-size: 13px; color: var(--text-light); }
+        .order-id strong { display: block; font-size: 22px; color: var(--primary-light); margin-top: 4px; }
+        @media (max-width: 1024px) { .checkout-grid { grid-template-columns: 1fr; } .order-summary { position: static; } }
+        @media (max-width: 768px) { .checkout-header .container { flex-direction: column; gap: 14px; } .steps { flex-wrap: wrap; justify-content: center; } .form-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <header class="header" id="header">
+        <div class="container header-inner">
+            <a href="index.html" class="logo"><i class="fa-solid fa-cube"></i><span>TresD</span></a>
+            <div class="header-actions">
+                <button class="menu-toggle" onclick="window.location.href='index.html'"><i class="fa-solid fa-arrow-left"></i></button>
+            </div>
+        </div>
+    </header>
+
+    <div class="checkout-page">
+        <div class="checkout-header">
+            <div class="container">
+                <a href="index.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Voltar à loja</a>
+                <div class="steps">
+                    <span class="step completed"><i class="fa-solid fa-cart-shopping"></i> Carrinho</span>
+                    <span class="step active"><i class="fa-solid fa-credit-card"></i> Pagamento</span>
+                    <span class="step"><i class="fa-solid fa-check"></i> Confirmado</span>
+                </div>
+                <div></div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="checkout-grid">
+                <div class="checkout-main">
+                    <form id="checkoutForm">
+                        <div class="checkout-section">
+                            <h3 class="section-title"><i class="fa-solid fa-user"></i> Dados Pessoais</h3>
+                            <div class="form-grid">
+                                <div class="form-group"><label>Nome Completo *</label><input type="text" id="nome" placeholder="Seu nome" required></div>
+                                <div class="form-group"><label>CPF *</label><input type="text" id="cpf" placeholder="000.000.000-00" required></div>
+                                <div class="form-group"><label>E-mail *</label><input type="email" id="email" placeholder="seu@email.com" required></div>
+                                <div class="form-group"><label>Telefone *</label><input type="tel" id="telefone" placeholder="(00) 00000-0000" required></div>
+                            </div>
+                        </div>
+
+                        <div class="checkout-section">
+                            <h3 class="section-title"><i class="fa-solid fa-truck"></i> Endereço de Entrega</h3>
+                            <div class="form-grid">
+                                <div class="form-group"><label>CEP *</label><input type="text" id="cep" placeholder="00000-000" required></div>
+                                <div class="form-group"><label>Estado *</label>
+                                    <select id="estado"><option value="">Selecione...</option><option value="SP">São Paulo</option><option value="RJ">Rio de Janeiro</option><option value="MG">Minas Gerais</option><option value="RS">Rio Grande do Sul</option><option value="PR">Paraná</option><option value="OUTROS">Outro</option></select>
+                                </div>
+                                <div class="form-group full"><label>Cidade *</label><input type="text" id="cidade" placeholder="Sua cidade" required></div>
+                                <div class="form-group full"><label>Endereço *</label><input type="text" id="endereco" placeholder="Rua, número, complemento" required></div>
+                                <div class="form-group"><label>Bairro *</label><input type="text" id="bairro" placeholder="Bairro" required></div>
+                                <div class="form-group"><label>Número</label><input type="text" id="numero" placeholder="S/N"></div>
+                            </div>
+                        </div>
+
+                        <div class="checkout-section">
+                            <h3 class="section-title"><i class="fa-solid fa-credit-card"></i> Forma de Pagamento</h3>
+                            <div class="payment-options">
+                                <div class="payment-option selected" onclick="selectPayment(this, 'cartao')">
+                                    <span class="payment-radio"></span>
+                                    <div class="payment-icon"><i class="fa-regular fa-credit-card"></i></div>
+                                    <div class="payment-info"><h4>Cartão de Crédito</h4><p>Em até 12x sem juros</p></div>
+                                </div>
+                                <div class="payment-option" onclick="selectPayment(this, 'pix')">
+                                    <span class="payment-radio"></span>
+                                    <div class="payment-icon"><i class="fa-brands fa-pix"></i></div>
+                                    <div class="payment-info"><h4>PIX</h4><p>Instantâneo, 10% desconto</p></div>
+                                </div>
+                                <div class="payment-option" onclick="selectPayment(this, 'boleto')">
+                                    <span class="payment-radio"></span>
+                                    <div class="payment-icon"><i class="fa-solid fa-barcode"></i></div>
+                                    <div class="payment-info"><h4>Boleto</h4><p>À vista, 5% desconto</p></div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="order-summary">
+                    <h3 class="summary-title">Resumo do Pedido</h3>
+                    <div class="summary-items" id="summaryItems"></div>
+                    <div class="summary-totals" id="summaryTotals"></div>
+                    <button class="btn btn-primary finish-btn" onclick="finishOrder()">
+                        <i class="fa-solid fa-lock"></i> Finalizar Pedido
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="success-modal" id="successModal">
+        <div class="success-content">
+            <div class="success-icon"><i class="fa-solid fa-check"></i></div>
+            <h2>Pedido Confirmado!</h2>
+            <p>Obrigado pela sua compra. Você receberá um e-mail com os detalhes.</p>
+            <div class="order-id">
+                <span>Número do pedido:</span>
+                <strong id="orderNumber">#TD000000</strong>
+            </div>
+            <a href="index.html" class="btn btn-primary"><i class="fa-solid fa-house"></i> Voltar à Loja</a>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <script src="script.js"></script>
+    <script>
+        let cart = [];
+        let selectedPayment = 'cartao';
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCart();
+            renderSummary();
+        });
+
+        function loadCart() {
+            const stored = localStorage.getItem('tresd_cart');
+            cart = stored ? JSON.parse(stored) : [];
+        }
+
+        function renderSummary() {
+            const itemsContainer = document.getElementById('summaryItems');
+            const totalsContainer = document.getElementById('summaryTotals');
+
+            if (cart.length === 0) {
+                itemsContainer.innerHTML = '<div class="empty-state"><i class="fa-solid fa-cart-shopping"></i><p>Seu carrinho está vazio</p></div>';
+                totalsContainer.innerHTML = '';
+                return;
+            }
+
+            let subtotal = 0;
+            itemsContainer.innerHTML = cart.map(item => {
+                const itemTotal = item.price * item.quantity;
+                subtotal += itemTotal;
+                return '<div class="summary-item"><img src="' + item.image + '" alt="' + item.name + '"><div class="item-details"><h4>' + item.name + '</h4><p>Qtd: ' + item.quantity + '</p></div><span class="item-price">R$ ' + itemTotal.toFixed(2).replace('.', ',') + '</span></div>';
+            }).join('');
+
+            const shipping = subtotal > 200 ? 0 : 15;
+            let discount = 0;
+            if (selectedPayment === 'pix') discount = subtotal * 0.10;
+            if (selectedPayment === 'boleto') discount = subtotal * 0.05;
+            const total = subtotal + shipping - discount;
+
+            let discountText = discount > 0 ? '-R$ ' + discount.toFixed(2).replace('.', ',') : 'R$ 0,00';
+            totalsContainer.innerHTML = '<div class="total-row"><span>Subtotal</span><span>R$ ' + subtotal.toFixed(2).replace('.', ',') + '</span></div><div class="total-row"><span>Frete</span><span>' + (shipping === 0 ? 'Grátis' : 'R$ ' + shipping.toFixed(2).replace('.', ',')) + '</span></div><div class="total-row"><span>Desconto</span><span>' + discountText + '</span></div><div class="total-row final"><span>Total</span><span>R$ ' + total.toFixed(2).replace('.', ',') + '</span></div>';
+        }
+
+        function selectPayment(element, method) {
+            document.querySelectorAll('.payment-option').forEach(opt => opt.classList.remove('selected'));
+            element.classList.add('selected');
+            selectedPayment = method;
+            renderSummary();
+        }
+
+        function finishOrder() {
+            const nome = document.getElementById('nome').value;
+            const email = document.getElementById('email').value;
+            const telefone = document.getElementById('telefone').value;
+            const endereco = document.getElementById('endereco').value;
+
+            if (!nome || !email || !telefone || !endereco) {
+                alert('Preencha todos os campos obrigatórios!');
+                return;
+            }
+
+            if (cart.length === 0) {
+                alert('Seu carrinho está vazio!');
+                return;
+            }
+
+            const orderNumber = '#TD' + Math.floor(Math.random() * 900000 + 100000);
+            document.getElementById('orderNumber').textContent = orderNumber;
+            document.getElementById('successModal').classList.add('active');
+
+            cart = [];
+            localStorage.setItem('tresd_cart', JSON.stringify(cart));
+        }
+    </script>
+</body>
+</html>
