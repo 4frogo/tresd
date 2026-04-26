@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Produtos - TresD Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --primary: #6366f1; --dark: #0f172a; --dark-2: #1e293b; --dark-3: #334155; --text-light: #94a3b8; --white: #fff; --success: #10b981; --error: #ef4444; --radius: 10px; }
+        body { font-family: 'Inter', sans-serif; background: var(--dark); color: var(--white); margin: 0; }
+        .admin-layout { display: flex; min-height: 100vh; }
+        .sidebar { width: 240px; background: var(--dark-2); border-right: 1px solid var(--dark-3); padding: 20px; position: fixed; height: 100vh; }
+        .sidebar-logo { font-size: 24px; font-weight: 800; margin-bottom: 30px; }
+        .sidebar-logo i { color: var(--primary); }
+        .nav-item { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: var(--radius); color: var(--text-light); font-size: 14px; font-weight: 500; cursor: pointer; margin-bottom: 4px; text-decoration: none; }
+        .nav-item:hover, .nav-item.active { background: var(--dark); color: var(--white); }
+        .nav-item .badge { margin-left: auto; background: var(--primary); padding: 2px 8px; border-radius: 20px; font-size: 11px; }
+        .logout { margin-top: auto; padding-top: 20px; border-top: 1px solid var(--dark-3); }
+        .main { flex: 1; margin-left: 240px; padding: 24px; }
+        .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
+        .page-title { font-size: 26px; font-weight: 700; }
+        .btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 20px; background: var(--primary); color: var(--white); border-radius: var(--radius); font-weight: 600; font-size: 14px; border: none; cursor: pointer; }
+        .btn:hover { opacity: 0.9; }
+        .toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+        .search { flex: 1; max: 300px; padding: 10px 14px; background: var(--dark-2); border: 1px solid var(--dark-3); border-radius: var(--radius); color: var(--white); font-size: 14px; }
+        .filters { display: flex; gap: 8px; }
+        .filter-btn { padding: 10px 16px; background: var(--dark-2); border: 1px solid var(--dark-3); border-radius: var(--radius); color: var(--text-light); font-size: 13px; cursor: pointer; }
+        .filter-btn:hover, .filter-btn.active { background: var(--primary); color: var(--white); }
+        .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+        .product-card { background: var(--dark-2); border: 1px solid var(--dark-3); border-radius: var(--radius); overflow: hidden; transition: all 0.2s; }
+        .product-card:hover { border-color: var(--primary); transform: translateY(-2px); }
+        .product-image { position: relative; aspect-ratio: 1; }
+        .product-image img { width: 100%; height: 100%; object-fit: cover; }
+        .product-badge { position: absolute; top: 8px; left: 8px; padding: 4px 8px; background: var(--success); border-radius: 20px; font-size: 11px; font-weight: 600; }
+        .product-info { padding: 14px; }
+        .product-cat { font-size: 11px; color: var(--primary); text-transform: uppercase; margin-bottom: 4px; }
+        .product-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+        .product-price { font-size: 18px; font-weight: 700; color: var(--primary); margin-bottom: 12px; }
+        .product-actions { display: flex; gap: 8px; }
+        .product-actions button { flex: 1; padding: 10px; background: var(--dark); border: none; border-radius: 8px; color: var(--white); font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .product-actions button:hover { background: var(--primary); }
+        .product-actions .delete:hover { background: var(--error); }
+        @media (max-width: 768px) { .sidebar { display: none; } .main { margin-left: 0; } }
+    </style>
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="sidebar">
+            <div class="sidebar-logo"><i class="fa-solid fa-cube"></i> TresD</div>
+            <nav class="nav">
+                <a href="dashboard.html" class="nav-item"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+                <a href="produtos.html" class="nav-item active"><i class="fa-solid fa-cube"></i> Produtos <span class="badge" id="count">8</span></a>
+                <a href="pedidos.html" class="nav-item"><i class="fa-solid fa-shopping-bag"></i> Pedidos</a>
+            </nav>
+            <div class="logout">
+                <div class="nav-item" onclick="logout()"><i class="fa-solid fa-sign-out-alt"></i> Sair</div>
+            </div>
+        </aside>
+        <main class="main">
+            <div class="page-header">
+                <h1 class="page-title">Gerenciar Produtos</h1>
+                <button class="btn" onclick="openModal()"><i class="fa-solid fa-plus"></i> Novo Produto</button>
+            </div>
+            <div class="toolbar">
+                <input type="text" class="search" id="search" placeholder="Buscar produtos..." oninput="filterProducts()">
+                <div class="filters">
+                    <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">Todos</button>
+                    <button class="filter-btn" data-filter="decoracao" onclick="setFilter('decoracao')">Decoração</button>
+                    <button class="filter-btn" data-filter="brinquedos" onclick="setFilter('brinquedos')">Brinquedos</button>
+                    <button class="filter-btn" data-filter="utilitarios" onclick="setFilter('utilitarios')">Utilitários</button>
+                </div>
+            </div>
+            <div class="products-grid" id="productsGrid"></div>
+        </main>
+    </div>
+    
+    <div id="modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); align-items:center; justify-content:center; z-index:1000;">
+        <div style="background:var(--dark-2); border:1px solid var(--dark-3); border-radius:10px; padding:24px; width:100%; max-width:500px;">
+            <h2 id="modalTitle" style="margin:0 0 20px;">Novo Produto</h2>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px;">
+                <input type="text" id="pName" placeholder="Nome do produto" style="grid-column:1/-1; padding:12px; background:var(--dark); border:1px solid var(--dark-3); border-radius:10px; color:var(--white);">
+                <select id="pCategory" style="padding:12px; background:var(--dark); border:1px solid var(--dark-3); border-radius:10px; color:var(--white);">
+                    <option value="">Categoria...</option>
+                    <option value="decoracao">Decoração</option>
+                    <option value="brinquedos">Brinquedos</option>
+                    <option value="utilitarios">Utilit��rios</option>
+                    <option value="miniaturas">Miniaturas</option>
+                </select>
+                <input type="number" id="pPrice" placeholder="Preço" step="0.01" style="padding:12px; background:var(--dark); border:1px solid var(--dark-3); border-radius:10px; color:var(--white);">
+                <input type="text" id="pDesc" placeholder="Descrição" style="grid-column:1/-1; padding:12px; background:var(--dark); border:1px solid var(--dark-3); border-radius:10px; color:var(--white);">
+                <input type="text" id="pImage" placeholder="URL da imagem" style="grid-column:1/-1; padding:12px; background:var(--dark); border:1px solid var(--dark-3); border-radius:10px; color:var(--white);">
+            </div>
+            <div style="display:flex; gap:12px; justify-content:flex-end;">
+                <button onclick="closeModal()" style="padding:12px 20px; background:var(--dark); border:1px solid var(--dark-3); border-radius:10px; color:var(--white); cursor:pointer;">Cancelar</button>
+                <button onclick="saveProduct()" style="padding:12px 20px; background:var(--primary); border:none; border-radius:10px; color:var(--white); cursor:pointer;">Salvar</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        if (!localStorage.getItem('tresd_admin')) window.location.href = 'index.html';
+        
+        const PRODUCTS_KEY = 'tresd_products';
+        let products = JSON.parse(localStorage.getItem(PRODUCTS_KEY)) || [
+            {id:1,name:"Elefante Decorativo",category:"decoracao",description:"Design moderno",price:49.90,status:"active",badge:"Mais Vendido",image:"https://images.unsplash.com/photo-1589829085413-56de8ae18c73?w=300"},
+            {id:2,name:"Vaso Geométrico",category:"decoracao",description:"Design moderno",price:39.90,status:"active",badge:null,image:"https://images.unsplash.com/photo-1612196808214-b8e1d6145a8c?w=300"},
+            {id:3,name:"Miniatura D20",category:"miniaturas",description:"Dado para RPG",price:29.90,status:"active",badge:null,image:"https://images.unsplash.com/photo-1612196808214-b8e1d6145a8c?w=300"},
+            {id:4,name:"Organizador Canetas",category:"utilitarios",description:"Porta-canetas",price:34.90,status:"active",badge:null,image:"https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=300"},
+            {id:5,name:"Personagem Anime",category:"brinquedos",description:"Figura colecionável",price:59.90,status:"active",badge:"Novo",image:"https://images.unsplash.com/photo-1608889825105-3d6a5c4a33d8?w=300"},
+            {id:6,name:"Suporte Fone",category:"utilitarios",description:"Suporte耳机",price:24.90,status:"active",badge:null,image:"https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=300"},
+            {id:7,name:"Lâmpada 3D",category:"decoracao",description:"Abajur decorativo",price:79.90,status:"active",badge:null,image:"https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=300"},
+            {id:8,name:"Tabuleiro Xadrez",category:"miniaturas",description:"Tabuleiro dobrável",price:89.90,status:"active",badge:null,image:"https://images.unsplash.com/photo-1529699211952-734e80c4d42b?w=300"}
+        ];
+        
+        localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products));
+        
+        let editId = null;
+        let currentFilter = 'all';
+        
+        function getCatName(cat) { return {decoracao:'Decoração',brinquedos:'Brinquedos',utilitarios:'Utilitários',miniaturas:'Miniaturas'}[cat] || cat; }
+        
+        function render() {
+            let filtered = products;
+            const search = document.getElementById('search').value.toLowerCase();
+            if (search) filtered = filtered.filter(p => p.name.toLowerCase().includes(search));
+            if (currentFilter !== 'all') filtered = filtered.filter(p => p.category === currentFilter);
+            
+            document.getElementById('productsGrid').innerHTML = filtered.map(p => `
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="${p.image}" alt="${p.name}" onerror="this.src='data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'">
+                        ${p.badge ? `<span class="product-badge">${p.badge}</span>` : ''}
+                    </div>
+                    <div class="product-info">
+                        <div class="product-cat">${getCatName(p.category)}</div>
+                        <div class="product-title">${p.name}</div>
+                        <div class="product-price">R$ ${p.price.toFixed(2).replace('.',',')}</div>
+                        <div class="product-actions">
+                            <button onclick="editProduct(${p.id})"><i class="fa-solid fa-pen"></i> Editar</button>
+                            <button class="delete" onclick="deleteProduct(${p.id})"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('count').textContent = products.length;
+        }
+        
+        function setFilter(cat) {
+            currentFilter = cat;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector(`[data-filter="${cat}"]`).classList.add('active');
+            render();
+        }
+        
+        function filterProducts() { render(); }
+        
+        function openModal(product = null) {
+            editId = product ? product.id : null;
+            document.getElementById('modalTitle').textContent = product ? 'Editar Produto' : 'Novo Produto';
+            document.getElementById('pName').value = product ? product.name : '';
+            document.getElementById('pCategory').value = product ? product.category : '';
+            document.getElementById('pPrice').value = product ? product.price : '';
+            document.getElementById('pDesc').value = product ? product.description : '';
+            document.getElementById('pImage').value = product ? product.image : '';
+            document.getElementById('modal').style.display = 'flex';
+        }
+        
+        function closeModal() { document.getElementById('modal').style.display = 'none'; }
+        
+        function saveProduct() {
+            const name = document.getElementById('pName').value;
+            const category = document.getElementById('pCategory').value;
+            const price = parseFloat(document.getElementById('pPrice').value);
+            const description = document.getElementById('pDesc').value;
+            const image = document.getElementById('pImage').value || 'https://images.unsplash.com/photo-1589829085413-56de8ae18c73?w=300';
+            
+            if (!name || !category || !price) { alert('Preencha todos os campos!'); return; }
+            
+            if (editId) {
+                const i = products.findIndex(p => p.id === editId);
+                products[i] = {...products[i], name, category, price, description, image};
+            } else {
+                products.push({id:Date.now(), name, category, price, description, image, status:'active', badge:null});
+            }
+            
+            localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products));
+            closeModal();
+            render();
+        }
+        
+        function editProduct(id) {
+            const p = products.find(p => p.id === id);
+            openModal(p);
+        }
+        
+        function deleteProduct(id) {
+            if (confirm('Excluir produto?')) {
+                products = products.filter(p => p.id !== id);
+                localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products));
+                render();
+            }
+        }
+        
+        function logout() { localStorage.removeItem('tresd_admin'); window.location.href = 'index.html'; }
+        
+        render();
+    </script>
+</body>
+</html>

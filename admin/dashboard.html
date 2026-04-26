@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - TresD Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        :root { --primary: #6366f1; --dark: #0f172a; --dark-2: #1e293b; --dark-3: #334155; --text-light: #94a3b8; --white: #fff; --success: #10b981; --error: #ef4444; --radius: 10px; --shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        body { font-family: 'Inter', sans-serif; background: var(--dark); color: var(--white); margin: 0; }
+        .admin-layout { display: flex; min-height: 100vh; }
+        .sidebar { width: 240px; background: var(--dark-2); border-right: 1px solid var(--dark-3); padding: 20px; position: fixed; height: 100vh; }
+        .sidebar-logo { font-size: 24px; font-weight: 800; margin-bottom: 30px; }
+        .sidebar-logo i { color: var(--primary); }
+        .nav-item { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: var(--radius); color: var(--text-light); font-size: 14px; font-weight: 500; cursor: pointer; margin-bottom: 4px; }
+        .nav-item:hover, .nav-item.active { background: var(--dark); color: var(--white); }
+        .nav-item .badge { margin-left: auto; background: var(--primary); padding: 2px 8px; border-radius: 20px; font-size: 11px; }
+        .logout { margin-top: auto; padding-top: 20px; border-top: 1px solid var(--dark-3); }
+        .main { flex: 1; margin-left: 240px; padding: 24px; }
+        .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
+        .page-title { font-size: 26px; font-weight: 700; }
+        .btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 20px; background: var(--primary); color: var(--white); border-radius: var(--radius); font-weight: 600; font-size: 14px; border: none; cursor: pointer; }
+        .btn:hover { opacity: 0.9; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 28px; }
+        .stat-card { background: var(--dark-2); border: 1px solid var(--dark-3); border-radius: var(--radius); padding: 20px; }
+        .stat-card h3 { font-size: 13px; color: var(--text-light); margin-bottom: 6px; font-weight: 500; }
+        .stat-card .value { font-size: 28px; font-weight: 700; }
+        .stat-card .change { font-size: 13px; margin-top: 6px; }
+        .stat-card .change.positive { color: var(--success); }
+        .card { background: var(--dark-2); border: 1px solid var(--dark-3); border-radius: var(--radius); overflow: hidden; }
+        .card-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--dark-3); }
+        .card-header h3 { font-size: 16px; font-weight: 600; }
+        .table { width: 100%; border-collapse: collapse; }
+        .table th { padding: 12px 16px; text-align: left; font-size: 12px; font-weight: 600; color: var(--text-light); text-transform: uppercase; background: var(--dark); }
+        .table td { padding: 14px 16px; border-bottom: 1px solid var(--dark-3); font-size: 14px; }
+        .table tr:hover { background: rgba(99,102,241,0.05); }
+        .product-cell { display: flex; align-items: center; gap: 12px; }
+        .product-cell img { width: 42px; height: 42px; object-fit: cover; border-radius: 8px; }
+        .product-cell h4 { font-size: 14px; margin-bottom: 2px; }
+        .product-cell p { font-size: 12px; color: var(--text-light); }
+        .status { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+        .status.active { background: rgba(16,185,129,0.15); color: var(--success); }
+        .status.pending { background: rgba(245,158,11,0.15); color: #f59e0b; }
+        .actions { display: flex; gap: 6px; }
+        .action-btn { width: 32px; height: 32px; background: var(--dark); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: var(--text-light); cursor: pointer; border: none; }
+        .action-btn:hover { background: var(--primary); color: var(--white); }
+        .action-btn.delete:hover { background: var(--error); }
+        @media (max-width: 768px) { .sidebar { display: none; } .main { margin-left: 0; } }
+    </style>
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="sidebar">
+            <div class="sidebar-logo"><i class="fa-solid fa-cube"></i> TresD</div>
+            <nav class="nav">
+                <a href="dashboard.html" class="nav-item active"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+                <a href="produtos.html" class="nav-item"><i class="fa-solid fa-cube"></i> Produtos <span class="badge" id="productCount">8</span></a>
+                <a href="pedidos.html" class="nav-item"><i class="fa-solid fa-shopping-bag"></i> Pedidos <span class="badge">12</span></a>
+                <a href="categorias.html" class="nav-item"><i class="fa-solid fa-tags"></i> Categorias</a>
+            </nav>
+            <div class="logout">
+                <div class="nav-item" onclick="logout()"><i class="fa-solid fa-sign-out-alt"></i> Sair</div>
+            </div>
+        </aside>
+        <main class="main">
+            <div class="page-header">
+                <h1 class="page-title">Dashboard</h1>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card"><h3>Total de Produtos</h3><div class="value" id="totalProducts">8</div><div class="change positive"><i class="fa-solid fa-arrow-up"></i> +2 este mês</div></div>
+                <div class="stat-card"><h3>Pedidos do Mês</h3><div class="value">24</div><div class="change positive"><i class="fa-solid fa-arrow-up"></i> +12%</div></div>
+                <div class="stat-card"><h3>Faturamento</h3><div class="value">R$ 4.290</div><div class="change positive"><i class="fa-solid fa-arrow-up"></i> +8%</div></div>
+                <div class="stat-card"><h3>Clientes</h3><div class="value">156</div><div class="change positive"><i class="fa-solid fa-arrow-up"></i> +23</div></div>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <h3>Últimos Produtos</h3>
+                    <a href="produtos.html" class="btn" style="padding: 8px 14px; font-size: 13px;">Ver Todos</a>
+                </div>
+                <table class="table">
+                    <thead><tr><th>Produto</th><th>Categoria</th><th>Preço</th><th>Status</th><th>Ações</th></tr></thead>
+                    <tbody id="productsTable"></tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+    <script src="script.js"></script>
+    <script>
+        // Check auth
+        if (!localStorage.getItem('tresd_admin')) window.location.href = 'index.html';
+        
+        function logout() {
+            localStorage.removeItem('tresd_admin');
+            window.location.href = 'index.html';
+        }
+        
+        // Load products
+        const products = [
+            {id:1,name:"Elefante Decorativo",category:"decoracao",description:"Design moderno",price:49.90,status:"active",image:"https://images.unsplash.com/photo-1589829085413-56de8ae18c73?w=100"},
+            {id:2,name:"Vaso Geométrico",category:"decoracao",description:"Design moderno",price:39.90,status:"active",image:"https://images.unsplash.com/photo-1612196808214-b8e1d6145a8c?w=100"},
+            {id:3,name:"Miniatura D20",category:"miniaturas",description:"Dado para RPG",price:29.90,status:"active",image:"https://images.unsplash.com/photo-1612196808214-b8e1d6145a8c?w=100"},
+            {id:4,name:"Organizador Canetas",category:"utilitarios",description:"Porta-canetas",price:34.90,status:"active",image:"https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=100"},
+            {id:5,name:"Personagem Anime",category:"brinquedos",description:"Figura colecionável",price:59.90,status:"active",image:"https://images.unsplash.com/photo-1608889825105-3d6a5c4a33d8?w=100"}
+        ];
+        
+        document.getElementById('totalProducts').textContent = products.length;
+        document.getElementById('productCount').textContent = products.length;
+        
+        function getCategoryName(cat) {
+            const names = {decoracao:'Decoração',brinquedos:'Brinquedos',utilitarios:'Utilitários',miniaturas:'Miniaturas'};
+            return names[cat] || cat;
+        }
+        
+        document.getElementById('productsTable').innerHTML = products.map(p => '<tr><td><div class="product-cell"><img src="'+p.image+'" alt="'+p.name+'"><div><h4>'+p.name+'</h4><p>'+p.description+'</p></div></div></td><td>'+getCategoryName(p.category)+'</td><td>R$ '+p.price.toFixed(2).replace('.',',')+'</td><td><span class="status active">Ativo</span></td><td><div class="actions"><button class="action-btn"><i class="fa-solid fa-pen"></i></button><button class="action-btn delete"><i class="fa-solid fa-trash"></i></button></div></td></tr>').join('');
+    </script>
+</body>
+</html>
